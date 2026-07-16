@@ -8,6 +8,7 @@
   由上层决定如何呈现, 而不是中途炸掉。
 """
 from jdscout.config import get_deepseek_model
+from jdscout.nodes._structured import ainvoke_structured_with_retry
 from jdscout.prompts.templates import EXTRACT_JD_PROMPT
 from jdscout.state import AgentState, JDRequirements
 
@@ -27,10 +28,7 @@ async def extract(state: AgentState) -> dict:
 
     prompt = EXTRACT_JD_PROMPT.format(jd_text=state["jd_raw_text"])
     try:
-        result = await structured_model.ainvoke(prompt)
-        if result is None:
-            # 输出被截断/解析失败时, with_structured_output 可能静默返回 None 而不 raise。
-            return {"errors": ["extract failed: model returned no structured output (possibly truncated)"]}
+        result = await ainvoke_structured_with_retry(structured_model, prompt)
         return {"jd_structured": result}
     except Exception as e:
         return {"errors": [f"extract failed: {e}"]}

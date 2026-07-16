@@ -1,0 +1,32 @@
+# 让构建上下文尽量小、镜像尽量干净。和 .gitignore 目的不同:
+# .gitignore 管"什么不进版本控制", .dockerignore 管"什么不进构建上下文/镜像"。
+
+# 虚拟环境 / 缓存(镜像里会用 uv 重新装, 不需要宿主机的)
+.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+.pytest_cache/
+
+# 版本控制与元数据
+.git/
+.gitignore
+
+# 密钥绝不进镜像(靠运行时 --env-file 注入)
+.env
+.env.*
+!.env.example
+
+# 测试 / 学习 / 文档产物
+tests/
+PROJECT_NOTES.md
+PHASE_1_BLUEPRINT.md
+
+# examples/ 里只保留 sample_resume.pdf(demo 用), 其余输出产物不进镜像
+examples/*
+!examples/sample_resume.pdf
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store

@@ -8,6 +8,7 @@
 - 同 extract: method="function_calling"(DeepSeek 不支持默认的 json_schema)。
 """
 from jdscout.config import get_deepseek_model
+from jdscout.nodes._structured import ainvoke_structured_with_retry
 from jdscout.prompts.templates import ANALYZE_PROMPT
 from jdscout.state import AgentState, GapAnalysis
 
@@ -27,10 +28,7 @@ async def analyze(state: AgentState) -> dict:
         resume=state["resume_raw_text"],
     )
     try:
-        result = await structured_model.ainvoke(prompt)
-        if result is None:
-            # 输出被截断/解析失败时, with_structured_output 可能静默返回 None 而不 raise。
-            return {"errors": ["analyze failed: model returned no structured output (possibly truncated)"]}
+        result = await ainvoke_structured_with_retry(structured_model, prompt)
         return {"gap_analysis": result}
     except Exception as e:
         return {"errors": [f"analyze failed: {e}"]}
