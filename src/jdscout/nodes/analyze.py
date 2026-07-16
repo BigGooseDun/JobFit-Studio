@@ -28,6 +28,9 @@ async def analyze(state: AgentState) -> dict:
     )
     try:
         result = await structured_model.ainvoke(prompt)
+        if result is None:
+            # 输出被截断/解析失败时, with_structured_output 可能静默返回 None 而不 raise。
+            return {"errors": ["analyze failed: model returned no structured output (possibly truncated)"]}
         return {"gap_analysis": result}
     except Exception as e:
         return {"errors": [f"analyze failed: {e}"]}

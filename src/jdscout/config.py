@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 
 
-def get_deepseek_model(temperature: float = 0.3, max_tokens: int = 4096) -> ChatOpenAI:
+def get_deepseek_model(temperature: float = 0.3, max_tokens: int = 8192) -> ChatOpenAI:
     """返回配置好的 DeepSeek 客户端。
 
     用 OpenAI-compatible 接口(DeepSeek 官方支持), 而不是专用 SDK。
@@ -16,6 +16,9 @@ def get_deepseek_model(temperature: float = 0.3, max_tokens: int = 4096) -> Chat
     还要在面试里讲"可扩展性"的项目, 这个解耦更值。
 
     temperature=0.3: 抽取/分析任务要稳定可复现, 不要发散, 所以偏低。
+    max_tokens=8192: DeepSeek 的输出上限。analyze/advise 的结构化输出很大(十几个
+      skill_matches 带 evidence + 多条改写建议), 4096 会偶发截断, 导致 with_structured_output
+      拿到残缺 JSON 而静默产出 None。顶到上限留足余量。(对应 PROJECT_NOTES 第 8 节的坑。)
     """
     api_key = os.getenv("DEEPSEEK_API_KEY")
     if not api_key:

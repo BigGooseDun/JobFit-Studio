@@ -2,14 +2,13 @@
   "jd": {
     "role_title": "AI Agent 工程师",
     "company": "某持牌金融科技公司(FinTech)",
-    "location": "深圳 · 南山",
+    "location": "深圳·南山",
     "seniority": "mid",
     "hard_skills": [
       "Python",
       "LangGraph",
       "LangChain",
       "Pydantic",
-      "Function Calling",
       "RAG",
       "向量数据库",
       "Chroma",
@@ -17,27 +16,27 @@
       "pgvector",
       "Docker",
       "CI/CD",
-      "async 编程"
+      "async"
     ],
     "nice_to_have": [
-      "金融/券商/银行相关业务理解",
-      "LLM 可观测性(LangSmith 等)实践",
+      "金融/券商/银行业务理解",
+      "LLM 可观测性(LangSmith)实践",
       "开源项目或技术博客"
     ],
     "domain": "FinTech",
     "years_of_experience": "1-3年",
-    "education": "本科",
+    "education": "本科及以上",
     "salary_range": "30-50K·15薪",
     "key_responsibilities": [
-      "负责智能投研/智能客服 Agent 的设计与落地，基于 LangGraph 构建多节点工作流",
-      "设计并优化 Prompt，实现稳定的 Function Calling 与工具编排",
-      "用 Pydantic 对 LLM 输出做结构化约束，保证下游数据可预期、可审计",
-      "搭建 RAG 检索链路（向量库选型、切片、召回优化）",
-      "负责服务的 Docker 化部署与线上稳定性"
+      "基于 LangGraph 构建多节点 Agent 工作流",
+      "设计 Prompt 与 Function Calling 做工具编排",
+      "用 Pydantic 对 LLM 输出做结构化约束，保证可审计",
+      "搭建 RAG 检索链路（向量库选型/切片/召回优化）",
+      "负责服务 Docker 化部署与线上稳定性"
     ]
   },
   "gap": {
-    "overall_match_score": 78,
+    "overall_match_score": 82,
     "skill_matches": [
       {
         "skill": "Python",
@@ -47,7 +46,7 @@
       {
         "skill": "LangGraph",
         "status": "matched",
-        "evidence": "Built a multi-agent RAG system with LangGraph that ingests arXiv papers and answers deep questions with inline citations"
+        "evidence": "Built a multi-agent RAG system with LangGraph that ingests arXiv papers... Implemented a 3-node workflow"
       },
       {
         "skill": "LangChain",
@@ -57,17 +56,12 @@
       {
         "skill": "Pydantic",
         "status": "matched",
-        "evidence": "AI / LLM: LangChain, LangGraph, Pydantic, OpenAI API, DeepSeek API, RAG"
-      },
-      {
-        "skill": "Function Calling",
-        "status": "matched",
-        "evidence": "implemented tool-calling adapter for third-party API integrations"
+        "evidence": "Backend: FastAPI + Pydantic; Handled edge cases in JSON schema validation with retry mechanism"
       },
       {
         "skill": "RAG",
         "status": "matched",
-        "evidence": "Built a multi-agent RAG system with LangGraph that ingests arXiv papers"
+        "evidence": "Built a multi-agent RAG system with LangGraph that ingests arXiv papers and answers deep questions with inline citations"
       },
       {
         "skill": "向量数据库",
@@ -92,79 +86,82 @@
       {
         "skill": "Docker",
         "status": "matched",
-        "evidence": "DevOps: Docker Compose, GitHub Actions, AWS (EC2, S3, Lambda)"
+        "evidence": "deployed via Docker on personal server; Docker Compose listed in DevOps skills"
       },
       {
         "skill": "CI/CD",
         "status": "matched",
-        "evidence": "GitHub Actions"
+        "evidence": "GitHub Actions listed in DevOps skills"
       },
       {
-        "skill": "async 编程",
+        "skill": "async",
         "status": "matched",
-        "evidence": "discovered and fixed a race condition in async event loop; reduced p99 latency by 35% via async I/O"
+        "evidence": "discovered and fixed a race condition in async event loop; reduced p99 latency by 35% with async I/O"
       }
     ],
     "strengths": [
-      "开源贡献: 12 PRs to LangGraph ecosystem — 远超JD要求，说明对核心框架有深入理解",
-      "大厂实习经验: Ant Group (Alibaba) + ByteDance 两段实习，与JD的金融科技方向有交集",
-      "async 编程实战经验丰富: 修复了 async event loop 的 race condition，并将 legacy 服务迁移到 async I/O 降低 p99 35%",
-      "学历优秀: UCSD MSCS (在读) + 浙大本科，GPA 高，CS 科班背景",
-      "有完整的 Agent 项目落地经验: PaperTalk 项目从数据摄入到检索到部署全链路，与JD职责高度吻合"
+      "开源贡献: 12 PRs to LangGraph ecosystem — directly relevant to the core tech stack of this role, shows deep engagement beyond surface-level usage",
+      "实际 Agent 项目经验: PaperTalk 项目完整实现了多节点 LangGraph 工作流 + RAG + 向量库 + Docker 部署，几乎就是 JD 职责的 mini 版本",
+      "大厂实习背景: 蚂蚁集团 (AI Agent 框架) + 字节跳动 (Python async 微服务)，与 JD 的金融科技公司背景高度匹配",
+      "Pydantic 结构化输出实战: 在 Kanban-GPT 项目中处理了 JSON schema validation 和 retry 机制，直接对应 JD 中 '用 Pydantic 对 LLM 输出做结构化约束'",
+      "async 经验扎实: 修复了 async event loop 的 race condition，主导了 Python 2→3.11 + async I/O 迁移，远超 JD 对 async 的基本要求"
     ],
     "critical_gaps": [
-      "缺少 Milvus 和 pgvector 经验: JD 明确要求这三种向量数据库，简历只用了 Chroma",
-      "无金融/券商/银行行业经验: JD 是持牌金融科技公司，简历无任何金融相关背景",
-      "尚未毕业 (2025年12月毕业): 可能影响全职入职时间，需确认是否接受应届/实习转正",
-      "缺少 LLM 可观测性工具经验: JD nice-to-have 提到 LangSmith，简历未提及",
-      "无生产级线上稳定性经验: JD 要求负责服务的 Docker 化部署与线上稳定性，简历项目多为个人/课程项目，未体现线上运维经验"
+      "缺少 Milvus 和 pgvector 经验: JD 明确要求这两种向量数据库，简历只用了 Chroma，可能需要额外学习成本",
+      "无金融/券商/银行业务背景: JD 是持牌金融科技公司，简历没有任何金融领域经验或课程",
+      "学历未完成: 硕士预计 2025 年 12 月毕业，目前仍在读，可能影响全职入职时间或签证/学历认证",
+      "无 LLM 可观测性(LangSmith)经验: JD 的 nice-to-have 之一，但简历完全未提及",
+      "缺少生产级 CI/CD 细节: 虽然列出了 GitHub Actions，但没有展示在真实生产环境中维护 CI/CD pipeline 的经验"
     ],
     "minor_gaps": [
-      "未提供手机号: 简历中手机号标注为 Not Provided",
-      "缺少开源项目或技术博客 (JD nice-to-have): 虽然有开源 PR，但未提及个人技术博客"
+      "缺少 pgvector 经验",
+      "缺少 Milvus 经验",
+      "无金融领域知识",
+      "无 LangSmith 实践",
+      "无技术博客或公开技术文章"
     ]
   },
   "advice": {
-    "should_apply": "worth_trying",
-    "should_apply_reason": "匹配度78%，核心技能（LangGraph、LangChain、Pydantic、Function Calling、RAG、Docker、CI/CD、async编程）全部命中，且有Ant Group（金融科技背景）和LangGraph开源贡献的加分项。但缺少Milvus/pgvector经验、无金融行业背景、且2025年12月才毕业，这些是JD明确要求的硬性条件。建议投递，但需在简历和面试中主动弥补这些差距。",
+    "should_apply": "strongly_recommend",
+    "should_apply_reason": "虽然存在 Milvus/pgvector 和金融背景的缺口，但整体匹配度高达 82 分，核心技能 Python/LangGraph/LangChain/Pydantic/RAG/Docker/async 全部匹配，且有 LangGraph 开源贡献和蚂蚁集团 AI Agent 实习经历，与 JD 职责高度吻合。学历在读问题可通过沟通实习转正或灵活入职时间解决，不影响推荐度。",
     "bullet_rewrites": [
       {
         "original": "Built a multi-agent RAG system with LangGraph that ingests arXiv papers and answers deep questions with inline citations",
-        "rewritten": "Designed and built a multi-agent RAG system with LangGraph, implementing a 3-node workflow (paper parser → retriever → citation-verifier) for intelligent document Q&A — directly applicable to智能投研/智能客服 Agent 场景",
-        "rationale": "突出 LangGraph 多节点工作流设计能力，直接对标 JD 第一条职责「基于 LangGraph 构建多节点工作流」，并将学术场景映射到金融场景"
+        "rewritten": "Built a multi-agent RAG system with LangGraph that implements a 3-node Agent workflow (paper parser → retriever → citation-verifier) for structured document Q&A, directly applicable to financial document processing pipelines",
+        "rationale": "突出 LangGraph 多节点 Agent 工作流这一 JD 核心职责，并将 arXiv 论文场景映射到金融文档处理的潜在应用场景"
       },
       {
         "original": "Implemented a 3-node workflow: paper parser → retriever → citation-verifier, using Chroma as vector store and OpenAI embeddings",
-        "rewritten": "搭建了完整的 RAG 检索链路：向量库选型（Chroma）、文档切片（paper chunking）、召回优化（citation-verifier 重排序），为下游提供可审计的结构化输出",
-        "rationale": "使用 JD 中的关键词「RAG 检索链路、向量库选型、切片、召回优化」重新组织，让面试官一眼看到匹配度"
+        "rewritten": "Designed RAG retrieval pipeline with Chroma vector store, including chunking strategy and recall optimization; achieved 87% citation accuracy on 200 hand-labeled queries",
+        "rationale": "直接对应 JD 中 '搭建 RAG 检索链路（向量库选型/切片/召回优化）' 这一职责，突出切片策略和召回优化等关键词"
+      },
+      {
+        "original": "Backend: FastAPI + Pydantic; Handled edge cases in JSON schema validation with retry mechanism",
+        "rewritten": "Used Pydantic for structured LLM output constraint and JSON schema validation with retry mechanism, ensuring auditable and type-safe model responses",
+        "rationale": "直接对应 JD 中 '用 Pydantic 对 LLM 输出做结构化约束，保证可审计'，强调可审计性和类型安全"
       },
       {
         "original": "Contributed to internal Agent framework: implemented tool-calling adapter for third-party API integrations, used by 3 downstream teams",
-        "rewritten": "在蚂蚁集团实习期间，为内部 Agent 框架实现了 Function Calling 适配层，支持第三方 API 工具编排，被 3 个下游团队采用",
-        "rationale": "明确标注「蚂蚁集团」增强金融科技背景关联，将「tool-calling adapter」对齐 JD 的「Function Calling 与工具编排」"
+        "rewritten": "Implemented tool-calling adapter for third-party API integrations in internal Agent framework, designing Prompt templates and Function Calling logic for tool orchestration, adopted by 3 downstream teams",
+        "rationale": "对应 JD 中 '设计 Prompt 与 Function Calling 做工具编排'，将实习经历中的工具调用适配器重新表述为 Prompt 设计和 Function Calling 编排"
       },
       {
-        "original": "Backend: FastAPI + Pydantic; Frontend: Next.js + shadcn/ui",
-        "rewritten": "使用 FastAPI + Pydantic 对 LLM 输出做结构化约束（JSON schema validation + retry mechanism），保证下游数据可预期、可审计",
-        "rationale": "将 Pydantic 的使用与 JD 职责「用 Pydantic 对 LLM 输出做结构化约束，保证下游数据可预期、可审计」直接对齐，并突出 retry 机制的工程严谨性"
-      },
-      {
-        "original": "Achieved 87% citation accuracy on 200 hand-labeled queries; deployed via Docker on personal server",
-        "rewritten": "服务通过 Docker 容器化部署，实现线上稳定运行；在 200 条标注查询上达到 87% 引用准确率",
-        "rationale": "突出 Docker 化部署经验，对齐 JD 职责「负责服务的 Docker 化部署与线上稳定性」，同时保留量化成果"
+        "original": "Owned migration of legacy Python 2 microservice to Python 3.11 + async I/O; reduced p99 latency by 35%",
+        "rewritten": "Led migration of legacy Python 2 microservice to Python 3.11 with full async I/O refactoring, reducing p99 latency by 35% and improving service throughput",
+        "rationale": "突出 async 实战经验，JD 明确要求 async，且该经历远超基本要求，值得在简历中强化展示"
       }
     ],
     "interview_prep_focus": [
-      "Milvus 与 pgvector 实战对比：重点准备 Milvus 的集群部署模式、索引类型（IVF_FLAT, HNSW）、与 Chroma 的差异；pgvector 的 HNSW 索引和 IVFFlat 索引的适用场景，以及向量库选型的技术决策逻辑",
-      "LangGraph 生产级特性：研究 LangGraph 的 checkpointer/thread persistence、human-in-the-loop 模式、以及如何与 LangSmith 集成做 trace 和可观测性",
-      "金融场景下的 RAG 优化：准备金融文档（研报、公告、行情数据）的切片策略、召回精度与召回率的平衡、以及金融领域对输出可审计性的特殊要求",
-      "async 编程在 Agent 服务中的应用：准备 asyncio 在 LLM 并发调用、多 Agent 协调、WebSocket 流式输出中的最佳实践，以及如何避免常见的 async 陷阱",
-      "Docker 化部署与线上稳定性：准备 Docker 多阶段构建、健康检查、资源限制、日志收集、以及 Agent 服务在线上环境中的异常处理（LLM 超时、API 限流、重试策略）"
+      "Milvus 与 pgvector 向量数据库: 重点学习 Milvus 的集群架构、索引类型（IVF_FLAT, HNSW）、部署方式，以及 pgvector 的索引（IVFFlat, HNSW）和与 PostgreSQL 的集成用法，准备对比 Chroma vs Milvus vs pgvector 的选型思考",
+      "LangGraph 生产化进阶: 研究 LangGraph 的 checkpointer/thread persistence、human-in-the-loop 模式、以及如何与 LangSmith 集成做 tracing 和可观测性",
+      "金融科技领域知识: 了解券商/银行常见的 AI 应用场景（智能投顾、风控、合规审查、文档审核），准备一个 '如何将你的 Agent 经验应用到金融场景' 的叙事",
+      "Pydantic 高级用法: 复习 Pydantic v2 的模型嵌套、自定义验证器、 discriminated union，以及如何用 Pydantic 做 LLM 输出的结构化约束和审计日志",
+      "Docker 化部署与线上稳定性: 准备讨论容器化部署的最佳实践（健康检查、资源限制、日志收集、优雅关闭），以及 CI/CD pipeline 在 Agent 服务中的设计（模型版本管理、回滚策略）"
     ],
     "questions_to_ask_interviewer": [
-      "贵公司在智能投研/智能客服场景中，目前使用的向量数据库是 Milvus 还是 pgvector？在实际业务中遇到过哪些向量检索层面的挑战（如数据规模、召回精度、延迟要求）？",
-      "团队目前对 LangGraph 的使用深度如何——是简单的链式调用，还是已经用到了 checkpointer、human-in-the-loop 等高级特性？有没有在生产环境中遇到工作流状态管理方面的坑？",
-      "考虑到我目前还在 UCSD 就读（2025年12月毕业），贵公司对这个岗位的入职时间有什么灵活安排？是否接受先实习再转正，或者毕业后立即入职？"
+      "贵公司在 Agent 落地上主要面向哪些金融业务场景（如智能客服、合规审查、量化分析）？目前 Agent 工作流在生产环境中的调用量和稳定性指标大概是什么水平？",
+      "团队目前在向量数据库选型上是统一使用 Milvus/pgvector 还是按场景混用？对于新同学，您期望在多长时间内上手并独立贡献？",
+      "考虑到我目前还在读硕士（预计 2025 年 12 月毕业），贵公司对于应届/在读生的入职时间安排和转正流程是怎样的？是否有实习转正的通道？"
     ]
   },
   "errors": []
