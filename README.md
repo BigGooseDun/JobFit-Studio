@@ -1,41 +1,96 @@
-# JD-Scout（好想上岸）
+# JD-Scout
 
-一个用 LangGraph 做的 AI Agent，帮求职者把每一份岗位 JD 看穿看透：自动抓取 JD → 结构化提取需求 → 与用户简历做 gap 分析 → 生成简历改写建议和面试重点。
+> Read every job description like a scout — structured, honest, tailored to *your* resume.
 
-## 快速开始
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Built with LangGraph](https://img.shields.io/badge/built%20with-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
+
+**JD-Scout** is a LangGraph AI agent that dissects any job description against your resume: it fetches the JD, extracts structured requirements, runs a gap analysis against your resume, and produces tailored rewrite suggestions and interview-prep focus points.
+
+Built for job seekers who face dozens of postings and can't read each one — starting with its own author. 中文版见 [README-CN.md](README-CN.md)（“好想上岸”）。
+
+## Features
+
+- **Structured, hallucination-resistant extraction** — every LLM output is constrained by a Pydantic schema; prompts explicitly forbid inventing skills or achievements, and skill matches must cite evidence from the resume.
+- **Honest scoring** — the agent is prompted *not* to inflate the match score; it will tell you when a role is a stretch.
+- **Resilient LLM calls** — bounded retry with backoff around structured output, after real-world observation that DeepSeek's function-calling occasionally returns nothing.
+- **Multi-format output** — machine-readable JSON *and* a human-readable Markdown report.
+- **Robust PDF parsing** — pdfplumber primary (handles multi-column) with automatic pypdfium2 fallback when faux-bold glyph doubling is detected.
+
+## Quick Start
+
+### Option A — Local (uv)
 
 ```bash
-# 1. 安装依赖（用 uv）
-uv sync --extra dev
-
-# 2. 配置 API key
-cp .env.example .env      # 然后填入你的 DEEPSEEK_API_KEY
-
-# 3. 跑一次分析：JD 原文（或 URL） + 简历 PDF
+uv sync --extra dev              # install deps
+cp .env.example .env             # then fill in DEEPSEEK_API_KEY
 uv run python -m jdscout.cli \
-    --jd "把 JD 全文粘贴到这里，或直接给一个 URL" \
+    --jd "paste the full JD here, or give a URL" \
     --resume examples/sample_resume.pdf \
     --output report.json --output-md report.md
 ```
 
-不加 `--output` 时报告直接打印到终端。查看全部参数：`uv run python -m jdscout.cli --help`。
+### Option B — Docker
 
-一份真实输出示例见 [`examples/sample_output.json`](examples/sample_output.json) / [`examples/sample_output.md`](examples/sample_output.md)。
-
-## 工作流
-
+```bash
+docker build -t jdscout .
+# mount a folder for your resume + output; inject the API key at runtime
+docker run --rm --env-file .env -v "$(pwd)/examples:/data" jdscout \
+    --jd "paste the full JD here, or give a URL" \
+    --resume /data/sample_resume.pdf \
+    --output /data/report.json
 ```
-START → fetch_jd → extract → analyze → advise → END
+
+Or with Compose: `docker compose run --rm jdscout --jd "..." --resume /data/sample_resume.pdf --output /data/report.json`
+
+Without `--output`, the report prints to stdout. See all flags: `uv run python -m jdscout.cli --help`.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    START((START)) --> F[fetch_jd<br/>IO only]
+    F --> E[extract<br/>JDRequirements]
+    E --> A[analyze<br/>GapAnalysis]
+    A --> D[advise<br/>ResumeAdvice]
+    D --> END((END))
 ```
 
-| 节点 | 作用 | 产出 |
+A linear four-node LangGraph. State flows on a shared `AgentState`: each node consumes upstream fields and writes its own (`errors` uses an additive reducer so failures accumulate rather than overwrite).
+
+| Node | Role | Produces |
 | --- | --- | --- |
-| `fetch_jd` | 抓取/接收 JD 文本（纯 IO，无 LLM） | `jd_raw_text` |
-| `extract` | 结构化提取岗位需求（Pydantic 强约束） | `JDRequirements` |
-| `analyze` | 简历 vs JD 差距分析 | `GapAnalysis` |
-| `advise` | 简历改写建议 + 面试重点 | `ResumeAdvice` |
+| `fetch_jd` | Fetch/accept JD text (heuristics, no LLM) | `jd_raw_text` |
+| `extract` | Structured requirement extraction | `JDRequirements` |
+| `analyze` | Resume-vs-JD gap analysis | `GapAnalysis` |
+| `advise` | Rewrite suggestions + interview prep | `ResumeAdvice` |
 
-## 已知限制（MVP）
+## Sample Output
 
-- 动态渲染的招聘网站（BOSS 直聘 / LinkedIn 等）抓不到，请手动粘贴 JD 文本。
-- 只支持文字版 PDF 简历，扫描版需要 OCR（Phase 2）。
+A full end-to-end run (FinTech AI-Agent JD × sample resume):
+- JSON: [`examples/sample_output.json`](examples/sample_output.json)
+- Markdown: [`examples/sample_output.md`](examples/sample_output.md)
+
+## Known Limitations (MVP)
+
+- JS-rendered job boards (BOSS 直聘, LinkedIn, etc.) can't be scraped — paste the JD text directly.
+- Text-based PDF resumes only; scanned resumes need OCR (Phase 2).
+- DeepSeek's function-calling occasionally fails to return structured output even after retries — most common on the largest node (`advise`); re-run when it happens.
+
+## Roadmap (Phase 2+)
+
+- Web UI (FastAPI + lightweight frontend)
+- Chroma vector store for application history + "similar roles you've applied to"
+- Playwright fallback for JS-rendered job boards
+- Lightweight memory: remember resume versions
+- Bilingual demo GIF + polished docs
+
+## Acknowledgments
+
+- [LangGraph](https://github.com/langchain-ai/langgraph) — the multi-node agent framework at the core.
+- [DeepSeek](https://platform.deepseek.com) — the LLM behind extraction and analysis.
+
+## License
+
+[MIT](LICENSE)
