@@ -1,0 +1,156 @@
+:root {
+  --bg: #0f1117;
+  --panel: #1a1d27;
+  --panel-2: #21242f;
+  --border: #2c3040;
+  --text: #e7e9ee;
+  --text-dim: #9aa0b0;
+  --accent: #4338ca;
+  --accent-light: #6366f1;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", Roboto, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1c1b3a 0%, var(--bg) 55%);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ---------- header ---------- */
+.site-header { padding: 28px 32px 12px; }
+.brand { display: flex; align-items: center; gap: 16px; }
+.logo { font-size: 42px; }
+.brand h1 { margin: 0; font-size: 26px; letter-spacing: 0.5px; }
+.brand-en { color: var(--accent-light); font-weight: 500; font-size: 18px; }
+.slogan { margin: 2px 0 0; color: var(--text-dim); font-size: 14px; }
+
+/* ---------- layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr 1.3fr;
+  gap: 20px;
+  padding: 20px 32px 40px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+.panel h2 { margin: 0 0 18px; font-size: 15px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.panel h3 { margin: 24px 0 10px; font-size: 15px; color: var(--accent-light); }
+
+/* ---------- input ---------- */
+.field-label { display: block; font-size: 13px; color: var(--text-dim); margin: 14px 0 6px; }
+textarea#jd-text {
+  width: 100%; min-height: 200px; resize: vertical;
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+  font-size: 14px; font-family: inherit;
+}
+textarea#jd-text:focus { outline: none; border-color: var(--accent-light); }
+
+.file-drop {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-2); border: 1px dashed var(--border);
+  border-radius: 10px; padding: 16px; cursor: pointer; color: var(--text-dim);
+  font-size: 14px; transition: border-color .2s, color .2s;
+}
+.file-drop:hover { border-color: var(--accent-light); color: var(--text); }
+.file-drop.has-file { color: var(--green); border-color: var(--green); border-style: solid; }
+
+.primary-btn {
+  margin-top: 20px; width: 100%; padding: 13px;
+  background: var(--accent); color: #fff; border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: background .2s, transform .05s;
+}
+.primary-btn:hover { background: var(--accent-light); }
+.primary-btn:active { transform: translateY(1px); }
+.primary-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.input-error { color: var(--red); font-size: 13px; margin-top: 12px; }
+
+/* ---------- progress ---------- */
+.steps { list-style: none; margin: 0; padding: 0; }
+.step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 12px; border-radius: 10px; margin-bottom: 8px;
+  background: var(--panel-2); border: 1px solid transparent; transition: all .25s;
+}
+.step-icon { width: 22px; text-align: center; font-size: 16px; color: var(--text-dim); }
+.step-name { font-size: 14px; }
+.step.running { border-color: var(--accent-light); }
+.step.running .step-icon { color: var(--accent-light); animation: spin 1s linear infinite; }
+.step.done .step-icon { color: var(--green); }
+.step.error .step-icon { color: var(--red); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- result ---------- */
+.score-row { display: flex; align-items: center; gap: 22px; margin-bottom: 8px; }
+.score-ring {
+  width: 110px; height: 110px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: conic-gradient(var(--accent-light) 0deg, var(--panel-2) 0deg);
+  position: relative; flex-shrink: 0;
+}
+.score-ring::before {
+  content: ""; position: absolute; inset: 10px; border-radius: 50%; background: var(--panel);
+}
+.score-num { position: relative; font-size: 34px; font-weight: 700; }
+.score-max { position: relative; font-size: 12px; color: var(--text-dim); }
+
+.badge {
+  display: inline-block; padding: 6px 14px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; color: #fff;
+}
+.badge.strongly_recommend { background: var(--green); }
+.badge.worth_trying { background: var(--yellow); color: #1a1d27; }
+.badge.stretch { background: var(--orange); }
+.badge.not_recommended { background: var(--red); }
+.verdict-reason { margin: 10px 0 0; font-size: 13px; color: var(--text-dim); }
+
+.skills-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.skills-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.skills-table td.skill-name { font-weight: 600; width: 30%; }
+.status-tag { display: inline-block; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.status-tag.matched { background: rgba(34,197,94,.15); color: var(--green); }
+.status-tag.partial { background: rgba(234,179,8,.15); color: var(--yellow); }
+.status-tag.missing { background: rgba(239,68,68,.15); color: var(--red); }
+.evidence { color: var(--text-dim); font-size: 12px; }
+
+.rewrite {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+}
+.rewrite .orig { color: var(--text-dim); font-size: 13px; text-decoration: line-through; }
+.rewrite .new { color: var(--text); font-size: 14px; margin: 6px 0; }
+.rewrite .why { color: var(--accent-light); font-size: 12px; }
+
+.plain-list { margin: 0; padding-left: 18px; }
+.plain-list li { font-size: 14px; margin-bottom: 8px; }
+
+/* ---------- footer ---------- */
+.site-footer {
+  padding: 20px 32px 32px; color: var(--text-dim); font-size: 13px;
+  display: flex; align-items: center; gap: 10px;
+}
+.site-footer a { color: var(--accent-light); text-decoration: none; }
+.site-footer .dot { opacity: .5; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .site-header, .layout, .site-footer { padding-left: 18px; padding-right: 18px; }
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>好想上岸 · JD-Scout</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <!-- marked.js: 把 markdown 文本渲染成 HTML(改写建议里用) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="logo">🧭</span>
+      <div>
+        <h1>好想上岸 <span class="brand-en">/ JD-Scout</span></h1>
+        <p class="slogan">把每一份 JD 看穿看透 —— 结构化、诚实、针对你的简历。</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左:输入区 -->
+    <section class="panel input-panel">
+      <h2>1 · 输入</h2>
+      <label class="field-label" for="jd-text">岗位 JD 原文</label>
+      <textarea id="jd-text" placeholder="把完整的 JD 粘贴到这里(至少 200 字)…"></textarea>
+
+      <label class="field-label" for="resume-file">简历 PDF</label>
+      <label class="file-drop" id="file-drop">
+        <input type="file" id="resume-file" accept="application/pdf" hidden />
+        <span id="file-name">点击选择 PDF 简历</span>
+      </label>
+
+      <button id="analyze-btn" class="primary-btn">开始分析</button>
+      <p id="input-error" class="input-error" hidden></p>
+    </section>
+
+    <!-- 中:进度区 -->
+    <section class="panel progress-panel" id="progress-panel" hidden>
+      <h2>2 · 进度</h2>
+      <ul class="steps" id="steps">
+        <li class="step" data-node="fetch_jd"><span class="step-icon">○</span><span class="step-name">抓取 JD</span></li>
+        <li class="step" data-node="extract"><span class="step-icon">○</span><span class="step-name">提取需求</span></li>
+        <li class="step" data-node="analyze"><span class="step-icon">○</span><span class="step-name">简历分析</span></li>
+        <li class="step" data-node="advise"><span class="step-icon">○</span><span class="step-name">改写建议</span></li>
+      </ul>
+    </section>
+
+    <!-- 右:结果区 -->
+    <section class="panel result-panel" id="result-panel" hidden>
+      <h2>3 · 结果</h2>
+
+      <div class="score-row">
+        <div class="score-ring" id="score-ring">
+          <span class="score-num" id="score-num">–</span>
+          <span class="score-max">/100</span>
+        </div>
+        <div class="verdict">
+          <span class="badge" id="apply-badge">–</span>
+          <p class="verdict-reason" id="apply-reason"></p>
+        </div>
+      </div>
+
+      <h3>技能匹配</h3>
+      <table class="skills-table"><tbody id="skills-body"></tbody></table>
+
+      <h3>简历改写建议</h3>
+      <div id="rewrites"></div>
+
+      <h3>面试重点</h3>
+      <ul id="prep-list" class="plain-list"></ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>一个 <strong>LangGraph</strong> 项目</span>
+    <span class="dot">·</span>
+    <a href="https://github.com/AlanYy-42/JD-Scout" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

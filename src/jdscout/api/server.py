@@ -3,11 +3,17 @@
 启动:  uv run uvicorn jdscout.api.server:app --reload --port 8000
 文档:  http://localhost:8000/docs (Swagger UI, FastAPI 自带)
 """
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from jdscout.api.routes import router
+
+# 前端静态文件目录(src/jdscout/web/static)
+_STATIC_DIR = Path(__file__).resolve().parent.parent / "web" / "static"
 
 app = FastAPI(
     title="JD-Scout API",
@@ -26,8 +32,11 @@ app.add_middleware(
 
 app.include_router(router)
 
+# 把 css/js 挂到 /static;index.html 单独在 "/" 提供(见下)。
+app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
+
 
 @app.get("/", include_in_schema=False)
-async def root() -> RedirectResponse:
-    """根路径重定向到自带的 Swagger 文档。"""
-    return RedirectResponse(url="/docs")
+async def index() -> FileResponse:
+    """前后端同源: FastAPI 直接把前端主页面 serve 在根路径。"""
+    return FileResponse(_STATIC_DIR / "index.html")

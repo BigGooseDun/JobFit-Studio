@@ -221,3 +221,7 @@ __marimo__/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# 本地临时测试产物(非 canonical sample; canonical 只有 examples/sample_output.*)
+examples/my_*.json
+examples/*_v2.json
