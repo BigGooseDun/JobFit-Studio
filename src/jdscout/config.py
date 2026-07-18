@@ -18,7 +18,7 @@ def get_deepseek_model(temperature: float = 0.3, max_tokens: int = 8192) -> Chat
     temperature=0.3: 抽取/分析任务要稳定可复现, 不要发散, 所以偏低。
     max_tokens=8192: DeepSeek 的输出上限。analyze/advise 的结构化输出很大(十几个
       skill_matches 带 evidence + 多条改写建议), 4096 会偶发截断, 导致 with_structured_output
-      拿到残缺 JSON 而静默产出 None。顶到上限留足余量。(对应 PROJECT_NOTES 第 8 节的坑。)
+      拿到残缺 JSON 而静默产出 None。顶到上限留足余量。
     """
     api_key = os.getenv("DEEPSEEK_API_KEY")
     if not api_key:
