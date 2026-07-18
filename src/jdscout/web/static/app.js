@@ -110,7 +110,10 @@ async function startAnalysis() {
   const file = els.file.files[0];
   els.inputError.hidden = true;
 
-  if (jd.length < 200) return showError("JD 文本太短(至少 200 字),请粘贴完整 JD。");
+  // URL 放行(后端会去抓取);只有"纯文本粘贴"才要求 >= 200 字。
+  const isUrl = /^https?:\/\//i.test(jd);
+  if (!jd) return showError("请粘贴 JD 原文或一个 URL。");
+  if (!isUrl && jd.length < 200) return showError("JD 文本太短(至少 200 字),请粘贴完整 JD,或直接贴岗位 URL。");
   if (!file) return showError("请上传简历 PDF。");
 
   els.btn.disabled = true;
