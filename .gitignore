@@ -225,3 +225,7 @@ __marimo__/
 # 本地临时测试产物(非 canonical sample; canonical 只有 examples/sample_output.*)
 examples/my_*.json
 examples/*_v2.json
+
+# .env editor backups
+.env.save
+.env.*
