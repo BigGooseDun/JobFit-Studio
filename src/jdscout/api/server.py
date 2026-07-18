@@ -3,6 +3,7 @@
 启动:  uv run uvicorn jdscout.api.server:app --reload --port 8000
 文档:  http://localhost:8000/docs (Swagger UI, FastAPI 自带)
 """
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -11,14 +12,23 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from jdscout.api.routes import router
+from jdscout.history.storage import get_storage
 
 # 前端静态文件目录(src/jdscout/web/static)
 _STATIC_DIR = Path(__file__).resolve().parent.parent / "web" / "static"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 启动时初始化历史库(首次会自动建表), 让 ~/.jdscout/history.db 就绪。
+    get_storage()
+    yield
 
 app = FastAPI(
     title="JD-Scout API",
     description="把一份岗位 JD 和你的简历做深度对比, 输出匹配度、改写建议和面试重点。",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # 开发期允许所有 origin, 方便前端本地联调; 生产环境应收紧到白名单。

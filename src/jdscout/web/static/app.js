@@ -3,7 +3,7 @@
 
 const $ = (sel) => document.querySelector(sel);
 
-// ---- Lucide 图标(inline SVG path, 用 currentColor 描边, 不依赖外部图标库) ----
+// ---- Lucide 图标(inline SVG path, currentColor 描边, 自动跟随主题色) ----
 const ICONS = {
   check: '<path d="M20 6 9 17l-5-5"/>',
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
@@ -14,6 +14,7 @@ const ICONS = {
   thumbsUp: '<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>',
   chevron: '<path d="m6 9 6 6 6-6"/>',
   play: '<polygon points="6 3 20 12 6 21 6 3"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
 };
 function svg(name, size = 16) {
   return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" ` +
@@ -27,25 +28,70 @@ const els = {
   fileName: $("#file-name"),
   btn: $("#analyze-btn"),
   inputError: $("#input-error"),
+  inputPanel: $("#input-panel"),
   resultPanel: $("#result-panel"),
   stepper: $("#stepper"),
+  sidebar: $("#sidebar"),
+  scrim: $("#sidebar-scrim"),
+  hamburger: $("#hamburger"),
+  newBtn: $("#new-analysis-btn"),
+  historyList: $("#history-list"),
+  historyCount: $("#history-count"),
 };
 
+const APPLY = {
+  strongly_recommend: { label: "强烈推荐投递", short: "强烈推荐", icon: "award" },
+  worth_trying: { label: "值得一试", short: "值得一试", icon: "thumbsUp" },
+  stretch: { label: "冲刺型", short: "冲刺型", icon: "triangle" },
+  not_recommended: { label: "不建议投递", short: "不建议", icon: "circleX" },
+};
+const STATUS_ICON = { matched: "circleCheck", partial: "triangle", missing: "circleX" };
+
+let activeHistoryId = null;
+
+// ---------- 初始化 ----------
 els.file.addEventListener("change", () => {
   const f = els.file.files[0];
   if (f) { els.fileName.textContent = f.name; els.fileDrop.classList.add("has-file"); }
 });
 els.btn.addEventListener("click", startAnalysis);
+els.newBtn.addEventListener("click", () => { showInputView(); closeSidebar(); });
+els.hamburger.addEventListener("click", toggleSidebar);
+els.scrim.addEventListener("click", closeSidebar);
+loadHistory();
+
+// ---------- Sidebar 开关(移动端) ----------
+function toggleSidebar() {
+  const open = els.sidebar.classList.toggle("open");
+  els.scrim.classList.toggle("show", open);
+}
+function closeSidebar() {
+  els.sidebar.classList.remove("open");
+  els.scrim.classList.remove("show");
+}
+
+// ---------- 视图切换 ----------
+function showInputView() {
+  els.inputPanel.hidden = false;
+  els.resultPanel.hidden = true;
+  els.inputError.hidden = true;
+  els.jd.value = "";
+  els.file.value = "";
+  els.fileName.textContent = "点击选择 PDF 简历";
+  els.fileDrop.classList.remove("has-file");
+  resetSteps();
+  setActiveHistory(null);
+}
 
 function showError(msg) { els.inputError.textContent = msg; els.inputError.hidden = false; }
 
+// ---------- 进度条 ----------
 function resetSteps() {
   els.stepper.querySelectorAll(".step").forEach((li) => {
     li.classList.remove("running", "done", "error");
     li.querySelector(".dot").innerHTML = "";
   });
 }
-
 function setStep(node, state) {
   const li = els.stepper.querySelector(`.step[data-node="${node}"]`);
   if (!li) return;
@@ -54,7 +100,11 @@ function setStep(node, state) {
   const dot = li.querySelector(".dot");
   dot.innerHTML = state === "done" ? svg("check", 16) : state === "error" ? svg("x", 16) : "";
 }
+function markAllStepsDone() {
+  els.stepper.querySelectorAll(".step").forEach((li) => setStep(li.dataset.node, "done"));
+}
 
+// ---------- 分析(SSE) ----------
 async function startAnalysis() {
   const jd = els.jd.value.trim();
   const file = els.file.files[0];
@@ -87,7 +137,6 @@ async function startAnalysis() {
   }
 }
 
-// 解析 fetch 流为 SSE 事件(以空行 \n\n 分隔, event:/data: 行)。
 async function consumeSSE(stream, onEvent) {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
@@ -105,7 +154,6 @@ async function consumeSSE(stream, onEvent) {
     }
   }
 }
-
 function parseEvent(raw) {
   let type = "message", data = "";
   for (const line of raw.split("\n")) {
@@ -116,26 +164,20 @@ function parseEvent(raw) {
   try { return { type, data: JSON.parse(data) }; }
   catch { return { type, data }; }
 }
-
 function handleEvent(type, data) {
   if (type === "node_start") setStep(data.node, "running");
   else if (type === "node_end") setStep(data.node, "done");
-  else if (type === "final_result") renderResult(data);
-  else if (type === "error") {
+  else if (type === "final_result") {
+    renderResult(data);
+    // 分析产生了新历史 -> 刷新列表并高亮
+    if (data.history_id) { loadHistory().then(() => setActiveHistory(data.history_id)); }
+  } else if (type === "error") {
     els.stepper.querySelectorAll(".step.running").forEach((li) => setStep(li.dataset.node, "error"));
     showError(data.message || "分析出错。");
   }
 }
 
 // ---------- 渲染结果 ----------
-const APPLY = {
-  strongly_recommend: { label: "强烈推荐投递", icon: "award" },
-  worth_trying: { label: "值得一试", icon: "thumbsUp" },
-  stretch: { label: "冲刺型", icon: "triangle" },
-  not_recommended: { label: "不建议投递", icon: "circleX" },
-};
-const STATUS_ICON = { matched: "circleCheck", partial: "triangle", missing: "circleX" };
-
 function renderResult(report) {
   els.resultPanel.hidden = false;
   if (report.errors && report.errors.length) {
@@ -146,12 +188,14 @@ function renderResult(report) {
   const advice = report.advice;
 
   if (gap) {
-    const score = gap.overall_match_score;
-    $("#score-num").textContent = score;
-    const deg = Math.round((score / 100) * 360);
+    $("#score-num").textContent = gap.overall_match_score;
+    const deg = Math.round((gap.overall_match_score / 100) * 360);
     $("#score-ring").style.background =
       `conic-gradient(var(--accent) ${deg}deg, var(--bg-secondary) ${deg}deg)`;
     renderSkills(gap.skill_matches || []);
+  } else {
+    $("#score-num").textContent = "–";
+    $("#skills").innerHTML = "";
   }
 
   if (advice) {
@@ -172,15 +216,20 @@ function renderResult(report) {
         `<div class="why">${escapeHtml(b.rationale)}</div>`;
       rw.appendChild(div);
     });
-
     fillList("#prep-list", advice.interview_prep_focus || []);
     const qs = advice.questions_to_ask_interviewer || [];
     $("#questions-block").hidden = qs.length === 0;
     fillList("#questions-list", qs);
+  } else {
+    $("#apply-badge").innerHTML = "无建议";
+    $("#apply-badge").className = "badge";
+    $("#apply-reason").textContent = "";
+    $("#rewrites").innerHTML = "";
+    fillList("#prep-list", []);
+    $("#questions-block").hidden = true;
   }
 }
 
-// 技能三色分组:matched 组默认折叠成一行"N 项完全匹配", 点击展开; partial/missing 展开。
 function renderSkills(matches) {
   const groups = { matched: [], partial: [], missing: [] };
   matches.forEach((sm) => (groups[sm.status] || (groups[sm.status] = [])).push(sm));
@@ -208,12 +257,10 @@ function renderSkills(matches) {
     wrap.appendChild(list);
     host.appendChild(wrap);
   }
-
   ["partial", "missing"].forEach((status) => {
     (groups[status] || []).forEach((sm) => host.appendChild(skillRow(sm)));
   });
 }
-
 function skillRow(sm) {
   const row = document.createElement("div");
   row.className = "skill-row " + sm.status;
@@ -223,7 +270,6 @@ function skillRow(sm) {
     `<span class="s-evidence">${escapeHtml(sm.evidence || "")}</span>`;
   return row;
 }
-
 function fillList(sel, items) {
   const ul = $(sel);
   ul.innerHTML = "";
@@ -232,6 +278,115 @@ function fillList(sel, items) {
     li.innerHTML = marked.parseInline(p);
     ul.appendChild(li);
   });
+}
+
+// ---------- History sidebar ----------
+async function loadHistory() {
+  let entries = [];
+  try {
+    const resp = await fetch("/api/history");
+    if (resp.ok) entries = await resp.json();
+  } catch { /* 离线时静默 */ }
+
+  els.historyCount.textContent = `历史 (${entries.length})`;
+  els.historyList.innerHTML = "";
+
+  if (!entries.length) {
+    const empty = document.createElement("div");
+    empty.className = "history-empty";
+    empty.textContent = "还没有记录,跑一次分析试试。";
+    els.historyList.appendChild(empty);
+    return;
+  }
+
+  // 按日期分组渲染
+  let lastGroup = null;
+  entries.forEach((e) => {
+    const g = dateGroup(e.created_at);
+    if (g !== lastGroup) {
+      const label = document.createElement("div");
+      label.className = "history-group-label";
+      label.textContent = g;
+      els.historyList.appendChild(label);
+      lastGroup = g;
+    }
+    els.historyList.appendChild(historyItem(e));
+  });
+
+  if (activeHistoryId) setActiveHistory(activeHistoryId);
+}
+
+function historyItem(e) {
+  const item = document.createElement("div");
+  item.className = "history-item";
+  item.dataset.id = e.id;
+
+  const applyShort = APPLY[e.should_apply]?.short || e.should_apply || "";
+  const metaBits = [e.match_score != null ? e.match_score : "–", applyShort].filter(Boolean).join(" · ");
+
+  item.innerHTML =
+    `<div class="hi-summary">${escapeHtml(e.jd_summary)}</div>` +
+    `<div class="hi-meta"><span>${escapeHtml(metaBits)}</span></div>` +
+    `<button class="hi-del" title="删除">${svg("trash", 15)}</button>`;
+
+  item.addEventListener("click", (ev) => {
+    if (ev.target.closest(".hi-del")) return;   // 点删除不算打开
+    openHistory(e.id);
+  });
+  item.querySelector(".hi-del").addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    deleteHistory(e.id);
+  });
+  return item;
+}
+
+async function openHistory(id) {
+  try {
+    const resp = await fetch(`/api/history/${id}`);
+    if (!resp.ok) throw new Error("加载失败");
+    const detail = await resp.json();
+    els.inputPanel.hidden = true;      // 切到详情视图
+    markAllStepsDone();
+    renderResult(detail.full_result || {});
+    setActiveHistory(id);
+    closeSidebar();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch {
+    showError("加载历史详情失败。");
+  }
+}
+
+async function deleteHistory(id) {
+  if (!window.confirm("确认删除这条分析吗?")) return;
+  try {
+    const resp = await fetch(`/api/history/${id}`, { method: "DELETE" });
+    if (!resp.ok) throw new Error();
+    if (activeHistoryId === id) { activeHistoryId = null; showInputView(); }
+    await loadHistory();
+  } catch {
+    showError("删除失败。");
+  }
+}
+
+function setActiveHistory(id) {
+  activeHistoryId = id;
+  els.historyList.querySelectorAll(".history-item").forEach((it) => {
+    it.classList.toggle("active", Number(it.dataset.id) === id);
+  });
+}
+
+// 今天 / 昨天 / 本周 / 更早
+function dateGroup(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startYesterday = new Date(startToday); startYesterday.setDate(startToday.getDate() - 1);
+  const mondayOffset = (startToday.getDay() + 6) % 7;   // 0=周一
+  const startWeek = new Date(startToday); startWeek.setDate(startToday.getDate() - mondayOffset);
+  if (d >= startToday) return "今天";
+  if (d >= startYesterday) return "昨天";
+  if (d >= startWeek) return "本周";
+  return "更早";
 }
 
 function escapeHtml(s) {

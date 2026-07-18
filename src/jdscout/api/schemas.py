@@ -20,6 +20,28 @@ class AnalyzeResponse(BaseModel):
     gap: Optional[GapAnalysis] = Field(default=None, description="简历 gap 分析, 未产出则 null")
     advice: Optional[ResumeAdvice] = Field(default=None, description="改写建议 + 面试重点, 未产出则 null")
     errors: list[str] = Field(default_factory=list, description="各节点累积的错误信息")
+    history_id: Optional[int] = Field(default=None, description="本次分析存档的历史记录 id(未存档则 null)")
+
+
+class HistoryListItem(BaseModel):
+    """GET /api/history 列表项(不含 full_result, 减少体积)。"""
+    id: int
+    created_at: str
+    jd_summary: str
+    match_score: Optional[int] = None
+    should_apply: Optional[str] = None
+
+
+class HistoryDetail(BaseModel):
+    """GET /api/history/:id 单条完整记录。"""
+    id: int
+    created_at: str
+    jd_text: str
+    jd_summary: str
+    resume_filename: str
+    match_score: Optional[int] = None
+    should_apply: Optional[str] = None
+    full_result: dict
 
 
 class ErrorResponse(BaseModel):

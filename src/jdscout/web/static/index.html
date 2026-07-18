@@ -10,6 +10,12 @@
 <body>
   <!-- ===== Header ===== -->
   <header class="site-header">
+    <button class="hamburger" id="hamburger" aria-label="菜单">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="18" y2="18" />
+      </svg>
+    </button>
     <div class="brand">
       <svg class="brand-mark" width="26" height="26" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -21,91 +27,106 @@
     <p class="tagline">把每一份 JD 看穿看透 —— 结构化、诚实、针对你的简历</p>
   </header>
 
-  <!-- ===== 顶部横向进度条 ===== -->
-  <nav class="stepper" id="stepper" aria-label="分析进度">
-    <ol>
-      <li class="step" data-node="fetch_jd"><span class="dot"></span><span class="step-label">抓取</span></li>
-      <li class="step" data-node="extract"><span class="dot"></span><span class="step-label">提取</span></li>
-      <li class="step" data-node="analyze"><span class="dot"></span><span class="step-label">分析</span></li>
-      <li class="step" data-node="advise"><span class="dot"></span><span class="step-label">建议</span></li>
-    </ol>
-  </nav>
-
-  <main class="container">
-    <!-- ===== 输入区 ===== -->
-    <section class="card input-card">
-      <label class="field-label" for="jd-text">岗位 JD 原文</label>
-      <textarea id="jd-text" placeholder="把完整的 JD 粘贴到这里(至少 200 字)…"></textarea>
-
-      <label class="field-label" for="resume-file">简历 PDF</label>
-      <label class="file-drop" id="file-drop">
-        <input type="file" id="resume-file" accept="application/pdf" hidden />
-        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <div class="app-shell">
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar" id="sidebar">
+      <button class="new-btn" id="new-analysis-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" />
+          <path d="M5 12h14" /><path d="M12 5v14" />
         </svg>
-        <span id="file-name">点击选择 PDF 简历</span>
-      </label>
-
-      <button id="analyze-btn" class="primary-btn">
-        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="6 3 20 12 6 21 6 3" />
-        </svg>
-        开始分析
+        新分析
       </button>
-      <p id="input-error" class="input-error" hidden></p>
-    </section>
+      <div class="history-count" id="history-count">历史 (0)</div>
+      <div class="history-list" id="history-list"></div>
+    </aside>
+    <div class="sidebar-scrim" id="sidebar-scrim"></div>
 
-    <!-- ===== 结果区 ===== -->
-    <section class="card result-card" id="result-panel" hidden>
-      <div class="result-head">
-        <div class="score-ring" id="score-ring">
-          <div class="score-inner">
-            <span class="score-num" id="score-num">–</span>
-            <span class="score-max">/100</span>
+    <!-- ===== Main area ===== -->
+    <div class="main-area">
+      <nav class="stepper" id="stepper" aria-label="分析进度">
+        <ol>
+          <li class="step" data-node="fetch_jd"><span class="dot"></span><span class="step-label">抓取</span></li>
+          <li class="step" data-node="extract"><span class="dot"></span><span class="step-label">提取</span></li>
+          <li class="step" data-node="analyze"><span class="dot"></span><span class="step-label">分析</span></li>
+          <li class="step" data-node="advise"><span class="dot"></span><span class="step-label">建议</span></li>
+        </ol>
+      </nav>
+
+      <main class="container">
+        <!-- 输入区 -->
+        <section class="card input-card" id="input-panel">
+          <label class="field-label" for="jd-text">岗位 JD 原文</label>
+          <textarea id="jd-text" placeholder="把完整的 JD 粘贴到这里(至少 200 字)…"></textarea>
+
+          <label class="field-label" for="resume-file">简历 PDF</label>
+          <label class="file-drop" id="file-drop">
+            <input type="file" id="resume-file" accept="application/pdf" hidden />
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" />
+            </svg>
+            <span id="file-name">点击选择 PDF 简历</span>
+          </label>
+
+          <button id="analyze-btn" class="primary-btn">
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="6 3 20 12 6 21 6 3" />
+            </svg>
+            开始分析
+          </button>
+          <p id="input-error" class="input-error" hidden></p>
+        </section>
+
+        <!-- 结果区 -->
+        <section class="card result-card" id="result-panel" hidden>
+          <div class="result-head">
+            <div class="score-ring" id="score-ring">
+              <div class="score-inner">
+                <span class="score-num" id="score-num">–</span>
+                <span class="score-max">/100</span>
+              </div>
+            </div>
+            <div class="verdict">
+              <span class="badge" id="apply-badge">–</span>
+              <p class="verdict-reason" id="apply-reason"></p>
+            </div>
           </div>
-        </div>
-        <div class="verdict">
-          <span class="badge" id="apply-badge">–</span>
-          <p class="verdict-reason" id="apply-reason"></p>
-        </div>
-      </div>
 
-      <div class="result-block">
-        <h3>技能匹配</h3>
-        <div class="skills" id="skills"></div>
-      </div>
+          <div class="result-block">
+            <h3>技能匹配</h3>
+            <div class="skills" id="skills"></div>
+          </div>
+          <div class="result-block">
+            <h3>简历改写建议</h3>
+            <div id="rewrites"></div>
+          </div>
+          <div class="result-block">
+            <h3>面试重点</h3>
+            <ul id="prep-list" class="plain-list"></ul>
+          </div>
+          <div class="result-block" id="questions-block" hidden>
+            <h3>面试反问建议</h3>
+            <ul id="questions-list" class="plain-list"></ul>
+          </div>
+        </section>
+      </main>
 
-      <div class="result-block">
-        <h3>简历改写建议</h3>
-        <div id="rewrites"></div>
-      </div>
-
-      <div class="result-block">
-        <h3>面试重点</h3>
-        <ul id="prep-list" class="plain-list"></ul>
-      </div>
-
-      <div class="result-block" id="questions-block" hidden>
-        <h3>面试反问建议</h3>
-        <ul id="questions-list" class="plain-list"></ul>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <span>一个 <strong>LangGraph</strong> 项目</span>
-    <span class="dot-sep">·</span>
-    <a href="https://github.com/AlanYy-42/JD-Scout" target="_blank" rel="noopener">
-      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C4 4 3 4 3 4c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 2 11c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-      </svg>
-      GitHub
-    </a>
-  </footer>
+      <footer class="site-footer">
+        <span>一个 <strong>LangGraph</strong> 项目</span>
+        <span class="dot-sep">·</span>
+        <a href="https://github.com/AlanYy-42/JD-Scout" target="_blank" rel="noopener">
+          <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C4 4 3 4 3 4c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 2 11c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+          </svg>
+          GitHub
+        </a>
+      </footer>
+    </div>
+  </div>
 
   <script src="/static/app.js"></script>
 </body>

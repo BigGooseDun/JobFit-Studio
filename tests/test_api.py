@@ -9,11 +9,21 @@ from fastapi.testclient import TestClient
 
 from jdscout.api import routes as routes_module
 from jdscout.api.server import app
+from jdscout.history import storage as storage_module
+from jdscout.history.storage import HistoryStorage
 from jdscout.state import JDRequirements, GapAnalysis, ResumeAdvice, BulletRewrite
 
 client = TestClient(app)
 
 RESUME = "examples/sample_resume.pdf"
+
+
+@pytest.fixture(autouse=True)
+def temp_storage(tmp_path):
+    """把历史库指向临时文件, 避免测试写到真实 ~/.jdscout。"""
+    storage_module.set_storage(HistoryStorage(db_path=tmp_path / "history.db"))
+    yield
+    storage_module.set_storage(None)
 
 
 def _fake_final_state() -> dict:
@@ -59,7 +69,49 @@ def test_analyze_success(monkeypatch):
     assert body["gap"]["overall_match_score"] == 78
     assert body["advice"]["should_apply"] == "worth_trying"
     assert body["errors"] == []
+    assert isinstance(body["history_id"], int)   # 自动存档
     fake_graph.ainvoke.assert_awaited_once()
+
+
+def test_history_lifecycle(monkeypatch):
+    """analyze 存档 -> list 能查到 -> detail 完整 -> delete 后消失。"""
+    fake_graph = MagicMock()
+    fake_graph.ainvoke = AsyncMock(return_value=_fake_final_state())
+    monkeypatch.setattr(routes_module, "graph", fake_graph)
+
+    # 初始为空
+    assert client.get("/api/history").json() == []
+
+    with open(RESUME, "rb") as f:
+        hid = client.post(
+            "/api/analyze",
+            data={"jd_text": "我们招聘 AI Agent 工程师, 要求 Python/LangGraph..."},
+            files={"resume_file": ("sample_resume.pdf", f, "application/pdf")},
+        ).json()["history_id"]
+
+    # list 有一条, 不含 full_result
+    lst = client.get("/api/history").json()
+    assert len(lst) == 1
+    assert lst[0]["id"] == hid
+    assert lst[0]["match_score"] == 78
+    assert "full_result" not in lst[0]
+
+    # detail 完整
+    detail = client.get(f"/api/history/{hid}").json()
+    assert detail["jd_summary"]
+    assert detail["full_result"]["gap"]["overall_match_score"] == 78
+
+    # delete
+    assert client.delete(f"/api/history/{hid}").json() == {"deleted": True}
+    assert client.get("/api/history").json() == []
+
+
+def test_history_get_missing_404():
+    assert client.get("/api/history/9999").status_code == 404
+
+
+def test_history_delete_missing_404():
+    assert client.delete("/api/history/9999").status_code == 404
 
 
 def test_analyze_rejects_non_pdf(monkeypatch):
