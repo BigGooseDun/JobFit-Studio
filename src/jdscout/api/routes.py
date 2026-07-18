@@ -47,6 +47,7 @@ def _assemble_report(final_state: dict) -> dict:
         "gap": final_state["gap_analysis"].model_dump() if final_state.get("gap_analysis") else None,
         "advice": final_state["advice"].model_dump() if final_state.get("advice") else None,
         "errors": final_state.get("errors", []),
+        "similar_histories": [s.model_dump() for s in final_state.get("similar_histories", [])],
     }
 
 
@@ -106,6 +107,7 @@ async def analyze_endpoint(
         advice=final_state.get("advice"),
         errors=final_state.get("errors", []),
         history_id=history_id,
+        similar_histories=final_state.get("similar_histories", []),
     )
 
 

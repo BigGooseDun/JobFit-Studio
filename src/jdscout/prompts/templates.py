@@ -103,4 +103,14 @@ Your task:
 
 4. Suggest 2-3 questions_to_ask_interviewer:
    - Questions that show engagement AND help the candidate assess fit.
-   - Avoid generic "what's your culture" questions.""" + _LANG_INSTRUCTION
+   - Avoid generic "what's your culture" questions.
+
+## User's Similar Past Applications
+
+{similar_histories_context}
+
+Consider these past applications when generating advice:
+- If the user has applied to similar roles before with consistent gaps (e.g., always missing "Milvus" or "gRPC"), acknowledge this pattern: "This is a recurring gap across your applications, worth investing time to learn."
+- If a similar past application scored much lower/higher, briefly note what changed.
+- Do NOT invent patterns if there's only 1 similar application; only comment on patterns with 2+ similar past entries.
+- Include pattern observations in should_apply_reason and/or interview_prep_focus.""" + _LANG_INSTRUCTION

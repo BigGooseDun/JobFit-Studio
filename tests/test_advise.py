@@ -50,6 +50,8 @@ def _patch_model(monkeypatch, *, ainvoke_return=None, ainvoke_raises=None):
     model = MagicMock()
     model.with_structured_output.return_value = structured_model
     monkeypatch.setattr(advise_module, "get_deepseek_model", lambda: model)
+    # 桩掉 RAG 检索, 避免单测加载 torch / 连 Chroma
+    monkeypatch.setattr(advise_module, "find_similar", lambda *a, **k: [])
     return structured_model
 
 

@@ -228,6 +228,52 @@ function renderResult(report) {
     fillList("#prep-list", []);
     $("#questions-block").hidden = true;
   }
+
+  renderSimilar(report.similar_histories || []);
+}
+
+// 相似投递参考卡片
+function renderSimilar(similar) {
+  const block = $("#similar-block");
+  const host = $("#similar-cards");
+  if (!similar.length) { block.hidden = true; host.innerHTML = ""; return; }
+  block.hidden = false;
+  host.innerHTML = "";
+  similar.forEach((s) => {
+    const applyMeta = APPLY[s.should_apply];
+    const card = document.createElement("div");
+    card.className = "similar-card";
+    card.innerHTML =
+      `<div class="sc-summary">${escapeHtml(s.jd_summary)}</div>` +
+      `<div class="sc-mid">` +
+        `<span class="sc-score">${s.match_score != null ? s.match_score : "–"}</span>` +
+        (applyMeta ? `<span class="sc-badge ${s.should_apply}">${svg(applyMeta.icon, 12)}${applyMeta.short}</span>` : "") +
+      `</div>` +
+      `<div class="sc-foot">` +
+        `<span class="sc-sim">${Math.round((s.similarity_score || 0) * 100)}% 相似</span>` +
+        `<span>${relativeTime(s.created_at)}</span>` +
+      `</div>`;
+    card.addEventListener("click", () => openHistory(s.history_id));
+    host.appendChild(card);
+  });
+}
+
+// ISO 时间 -> 相对(如 "3 天前")
+function relativeTime(iso) {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const sec = Math.max(0, Math.round((now - then) / 1000));
+  if (sec < 60) return "刚刚";
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min} 分钟前`;
+  const hr = Math.round(min / 60);
+  if (hr < 24) return `${hr} 小时前`;
+  const day = Math.round(hr / 24);
+  if (day < 30) return `${day} 天前`;
+  const mon = Math.round(day / 30);
+  if (mon < 12) return `${mon} 个月前`;
+  return `${Math.round(mon / 12)} 年前`;
 }
 
 function renderSkills(matches) {

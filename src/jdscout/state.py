@@ -83,6 +83,16 @@ class BulletRewrite(BaseModel):
     rationale: str = Field(description="为什么这样改, 1-2 句话")
 
 
+class SimilarHistory(BaseModel):
+    """检索到的一条相似历史投递(给 advise 参考 + 前端展示)。"""
+    history_id: int
+    jd_summary: str
+    match_score: Optional[int] = None
+    should_apply: Optional[str] = None
+    similarity_score: float = Field(description="余弦相似度 0-1")
+    created_at: str
+
+
 class ResumeAdvice(BaseModel):
     """给用户的最终建议。"""
     should_apply: str = Field(
@@ -120,6 +130,9 @@ class AgentState(TypedDict, total=False):
     jd_structured: JDRequirements    # Node 2 输出
     gap_analysis: GapAnalysis         # Node 3 输出
     advice: ResumeAdvice              # Node 4 输出
+
+    # RAG: advise 节点检索到的相似历史投递(给前端展示)
+    similar_histories: list[SimilarHistory]
 
     # 元信息
     # 用 Annotated[..., add] 声明 reducer: 多个节点各自 append error 时自动"列表拼接"

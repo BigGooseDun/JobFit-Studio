@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from jdscout.api.routes import router
-from jdscout.history.storage import get_storage
+from jdscout.history.storage import get_storage, reindex_missing
 
 # 前端静态文件目录(src/jdscout/web/static)
 _STATIC_DIR = Path(__file__).resolve().parent.parent / "web" / "static"
@@ -21,7 +21,14 @@ _STATIC_DIR = Path(__file__).resolve().parent.parent / "web" / "static"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 启动时初始化历史库(首次会自动建表), 让 ~/.jdscout/history.db 就绪。
-    get_storage()
+    storage = get_storage()
+    # 平滑升级: 给 SQLite 里有、向量库里没有的历史补索引(M8 前的旧数据 / 手删了 chroma)。
+    try:
+        n = reindex_missing(storage)
+        if n:
+            print(f"[jdscout] reindexed {n} history entries into vector store")
+    except Exception as e:
+        print(f"[jdscout] reindex skipped: {e}")
     yield
 
 app = FastAPI(

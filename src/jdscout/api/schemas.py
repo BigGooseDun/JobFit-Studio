@@ -11,7 +11,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from jdscout.state import JDRequirements, GapAnalysis, ResumeAdvice
+from jdscout.state import JDRequirements, GapAnalysis, ResumeAdvice, SimilarHistory
 
 
 class AnalyzeResponse(BaseModel):
@@ -21,6 +21,7 @@ class AnalyzeResponse(BaseModel):
     advice: Optional[ResumeAdvice] = Field(default=None, description="改写建议 + 面试重点, 未产出则 null")
     errors: list[str] = Field(default_factory=list, description="各节点累积的错误信息")
     history_id: Optional[int] = Field(default=None, description="本次分析存档的历史记录 id(未存档则 null)")
+    similar_histories: list[SimilarHistory] = Field(default_factory=list, description="检索到的相似历史投递")
 
 
 class HistoryListItem(BaseModel):
