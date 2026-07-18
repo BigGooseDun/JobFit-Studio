@@ -15,9 +15,9 @@ JD-Scout 吃进一份岗位 JD 和你的简历，输出一份结构化的匹配�
 
 ## Demo
 
-<img src="docs/demo.gif" alt="JD-Scout demo" width="720"/>
+<img src="examples/demopic.png" alt="JD-Scout 匹配报告" width="820"/>
 
-30 秒看 JD-Scout 分析一份真实 JD。
+JD-Scout 的结构化匹配报告:总体匹配度、技能逐条匹配(完全 / 部分 / 缺失,带证据)、针对性简历改写建议 —— 全部用 JD 的语言输出。
 
 ## 特性
 

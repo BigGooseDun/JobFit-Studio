@@ -15,9 +15,9 @@ JD-Scout ingests a job description and your resume, then outputs a structured ma
 
 ## Demo
 
-<img src="docs/demo.gif" alt="JD-Scout demo" width="720"/>
+<img src="examples/demopic.png" alt="JD-Scout match report" width="820"/>
 
-See a live demo of JD-Scout analyzing a real JD in 30 seconds.
+JD-Scout's structured match report: overall score, skill matches (matched / partial / missing with evidence), and tailored resume rewrites — all in the language of the JD.
 
 ## Features
 
