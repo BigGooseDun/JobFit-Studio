@@ -4,6 +4,7 @@
 DB 文件默认放 ~/.jdscout/history.db(用户数据, 不进 git 也不进 Docker 镜像)。
 """
 import json
+import os
 import sqlite3
 from pathlib import Path
 from typing import Optional
@@ -26,7 +27,9 @@ CREATE INDEX IF NOT EXISTS idx_history_created_at ON history_entries(created_at 
 
 
 def _default_db_path() -> Path:
-    return Path.home() / ".jdscout" / "history.db"
+    # 可用 SQLITE_PATH 覆盖(见 README Configuration), 默认 ~/.jdscout/history.db。
+    env = os.getenv("SQLITE_PATH")
+    return Path(env) if env else Path.home() / ".jdscout" / "history.db"
 
 
 class HistoryStorage:

@@ -6,6 +6,7 @@ Collection: "jd_history", cosine 距离空间。
 底层方法(add/query/delete/count)只收/发 embedding 向量, 不碰 embedder ——
 方便测试用假向量、也让"存什么向量"的策略集中在 index_entry 一处。
 """
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -16,7 +17,9 @@ _COLLECTION = "jd_history"
 
 
 def _default_dir() -> Path:
-    return Path.home() / ".jdscout" / "chroma"
+    # 可用 CHROMA_DIR 覆盖(见 README Configuration), 默认 ~/.jdscout/chroma。
+    env = os.getenv("CHROMA_DIR")
+    return Path(env) if env else Path.home() / ".jdscout" / "chroma"
 
 
 class VectorStore:
