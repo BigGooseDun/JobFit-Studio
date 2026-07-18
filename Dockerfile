@@ -12,6 +12,11 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
+# Playwright 浏览器 + 系统依赖。--with-deps 会 apt-get 装 Chromium 需要的系统库
+# (libnss3 / libatk / libgbm 等)。这一步让镜像从 ~800MB 涨到 ~1.5-1.8GB, 是预期代价。
+# 放在源码之前, 让它命中依赖层缓存(只有 playwright 版本变才重跑)。
+RUN uv run --no-sync playwright install chromium --with-deps
+
 # 再拷源码。业务代码常变, 放在依赖层之后, 改代码不影响上面的依赖缓存。
 COPY src/ ./src/
 # 把项目本身装进环境(editable), 让 `python -m jdscout.cli` 能 import。

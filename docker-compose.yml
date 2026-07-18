@@ -1,15 +1,19 @@
-# docker compose 相比裸 docker run 的好处:把"镜像名、env-file、volume 挂载"这些
-# 固定配置写死在文件里, 每次只需 `docker compose run --rm jdscout <参数>`, 不用手敲一长串。
+# docker compose 相比裸 docker run 的好处:把"镜像名、env-file、端口、volume 挂载"这些
+# 固定配置写死在文件里, `docker compose up` 一条命令就把 Web 服务起起来。
 services:
   jdscout:
     build: .
     image: jdscout
-    # API key 运行时从 .env 注入, 不进镜像(见 Dockerfile / .dockerignore)。
+    # 覆盖镜像默认的 CLI entrypoint, 改起 Web 服务(Quick Start Option B)。
+    entrypoint: ["uv", "run", "--no-sync", "uvicorn", "jdscout.api.server:app",
+                 "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    # API key 运行时从 .env 注入, 不进镜像。
     env_file:
       - .env
-    # 把宿主机的 examples/ 挂到容器 /data, 简历从这里读、报告往这里写。
+    # 持久化历史(SQLite)+ 向量库(Chroma): 容器内 Path.home() = /root。
     volumes:
-      - ./examples:/data
-    # 覆盖默认(空)命令。实际用时在命令行追加参数即可, 例如:
-    #   docker compose run --rm jdscout \
-    #     --jd "..." --resume /data/sample_resume.pdf --output /data/report.json
+      - ~/.jdscout:/root/.jdscout
+# 仍可用 CLI: docker run --rm --env-file .env -v "$(pwd)/examples:/data" jdscout \
+#   --jd "..." --resume /data/sample_resume.pdf --output /data/report.json
