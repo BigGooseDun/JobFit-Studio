@@ -4,7 +4,22 @@ prompt 设计原则(贯穿全部节点):
 - 明确 "Do NOT invent" —— 反幻觉(LLM 会脑补 JD 里没写的技能)
 - 明确 "use null / empty list" —— 缺失字段有确定行为, 不让模型瞎填
 - 只抽硬技能, 排除软技能 —— 下游 gap 分析才有意义
+- 输出语言 = 中文 —— 界面是中文的, 自然语言字段(strengths/gaps/建议等)必须中文, 但
+  从 JD 直接抽取的结构化字段和简历引用保持原文语言(见 _LANG_INSTRUCTION)。
+  prompt 主体保持英文(指令精度更高), 只在末尾追加语言指令。
 """
+
+# 三个 prompt 共用的输出语言指令。追加到每个模板末尾。
+_LANG_INSTRUCTION = """
+
+IMPORTANT: Respond in Chinese (中文). All free-text fields in the output must be in Chinese, including:
+- strengths, critical_gaps, minor_gaps (in analyze)
+- rewritten text, rationale, should_apply_reason, interview_prep_focus, questions_to_ask_interviewer (in advise)
+
+Structured fields extracted directly from the JD (role_title, company, hard_skills, nice_to_have) should PRESERVE the original language of the JD — if the JD is in Chinese, keep them in Chinese; if in English, keep in English. Do NOT translate these.
+
+For skill_matches[].evidence, quote the resume text in its original language."""
+
 
 EXTRACT_JD_PROMPT = """You are analyzing a job description (JD) to extract structured requirements.
 
@@ -21,7 +36,7 @@ JD text:
 {jd_text}
 ---
 
-Extract now."""
+Extract now.""" + _LANG_INSTRUCTION
 
 
 ANALYZE_PROMPT = """You are comparing a candidate's resume against a structured job description (JD).
@@ -49,7 +64,7 @@ Your task:
    - 50-69: stretch, some critical gaps
    - <50: significant mismatch
 
-Be honest. Do not inflate the score to be encouraging."""
+Be honest. Do not inflate the score to be encouraging.""" + _LANG_INSTRUCTION
 
 
 ADVISE_PROMPT = """You are a career coach helping a job seeker tailor their resume for a specific JD.
@@ -88,4 +103,4 @@ Your task:
 
 4. Suggest 2-3 questions_to_ask_interviewer:
    - Questions that show engagement AND help the candidate assess fit.
-   - Avoid generic "what's your culture" questions."""
+   - Avoid generic "what's your culture" questions.""" + _LANG_INSTRUCTION
