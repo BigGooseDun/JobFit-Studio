@@ -16,10 +16,12 @@ MVP 限制:
 - 只支持文字版 PDF, 不支持扫描版(需要 OCR, Phase 2 再加)。
 - 假设单列排版, 双列/图片版可能失败(降级方案: 让用户改成 docx→单列 pdf)。
 """
+import io
 from pathlib import Path
 
 import pdfplumber
 import pypdfium2 as pdfium
+from PIL import Image
 
 # 连续重复字符比例超过这个值, 判定为"粗体双写"污染, 触发 fallback。
 # 正常英文 ~3-4%, 中文更低; 双写案例实测 13.5%, 8% 能干净分开两者。
@@ -74,3 +76,56 @@ def extract_pdf_text(pdf_path: Path) -> str:
             return fallback
 
     return text
+
+
+def extract_resume_photo(pdf_path: Path) -> bytes | None:
+    """Render the most likely portrait image from a text PDF as JPEG bytes.
+
+    pdfplumber exposes image bounding boxes but does not provide a portable
+    image file for every PDF encoder. Rendering the selected box keeps this
+    compatible with JPEG, PNG, and masked PDF image objects. The heuristic
+    prefers a small, near-square image near the top of the first page.
+    """
+    pdf_path = Path(pdf_path)
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            if not pdf.pages:
+                return None
+            page = pdf.pages[0]
+            candidates = []
+            for image in page.images:
+                width = float(image.get("width") or 0)
+                height = float(image.get("height") or 0)
+                if width < 35 or height < 35:
+                    continue
+                ratio = width / height if height else 0
+                if ratio < 0.45 or ratio > 2.2:
+                    continue
+                area = width * height
+                top = float(image.get("top") or 0)
+                square_distance = abs(ratio - 1.0)
+                # Smaller score is better: portrait-like, near the page top,
+                # and not a full-page background image.
+                score = square_distance + (top / max(page.height, 1)) * 0.35
+                if area > page.width * page.height * 0.45:
+                    score += 3.0
+                candidates.append((score, image))
+
+            if not candidates:
+                return None
+            _, image = min(candidates, key=lambda item: item[0])
+            bbox = (
+                float(image["x0"]),
+                float(image["top"]),
+                float(image["x1"]),
+                float(image["bottom"]),
+            )
+            cropped = page.crop(bbox).to_image(resolution=180).original
+            if cropped.mode not in {"RGB", "L"}:
+                cropped = cropped.convert("RGB")
+            output = io.BytesIO()
+            cropped.save(output, format="JPEG", quality=92, optimize=True)
+            return output.getvalue()
+    except Exception:
+        # A malformed/unsupported image must not block text-only export.
+        return None

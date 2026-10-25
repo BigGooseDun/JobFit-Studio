@@ -1,6 +1,14 @@
 MIT License
 
 Copyright (c) 2026 Ziming "Alan" Yi
+Copyright (c) 2026 BigGooseDun (additions and modifications)
+
+This repository is derived from JD-Scout:
+https://github.com/AlanYy-42/JD-Scout
+
+The original copyright notice and MIT license terms are retained. The BigGooseDun
+copyright notice applies to the additions and modifications contributed to this
+derived project and does not claim ownership of the original JD-Scout code.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

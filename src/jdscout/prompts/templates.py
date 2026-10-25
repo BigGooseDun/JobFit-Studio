@@ -95,6 +95,8 @@ Your task:
    - Pick the resume bullets MOST relevant to this JD.
    - Rewrite each to emphasize keywords from the JD (only if the underlying experience is real).
    - IMPORTANT: Do NOT invent achievements. Only rephrase existing bullets to highlight relevant angles.
+   - The original field MUST be copied verbatim from the resume text above as one contiguous excerpt. Do not summarize it, translate it, or change punctuation. If fewer than 3 bullets can be safely grounded in the resume, return only the grounded bullets.
+   - If the match score is low or there are few relevant bullets, prefer conservative sentence polishing of real resume content (clearer verbs, concise structure, and measurable details already present) rather than inventing new experience.
    - Include a 1-sentence rationale for each rewrite.
 
 3. Suggest 3-5 interview_prep_focus items:

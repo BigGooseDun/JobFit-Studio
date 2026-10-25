@@ -6,10 +6,11 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 from jdscout.graph import graph
-from jdscout.tools.pdf_parser import extract_pdf_text
+from jdscout.tools.pdf_parser import extract_pdf_text, extract_resume_photo
+from jdscout.tools.resume_export import parse_rewrites, render_resume_with_report
 from jdscout.api.schemas import AnalyzeResponse, HistoryListItem, HistoryDetail
 from jdscout.history.models import HistoryEntry
 from jdscout.history.storage import get_storage
@@ -155,6 +156,64 @@ async def analyze_stream_endpoint(
             yield _sse("error", {"type": "internal_error", "message": str(e)})
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.post("/api/resume/export")
+async def export_resume(
+    resume_file: UploadFile = File(..., description="原始简历 PDF"),
+    rewrites_json: str = Form("[]", description="用户确认后的改写 JSON 数组"),
+    output_format: str = Form("docx", description="docx 或 pdf"),
+    match_score: int | None = Form(None, description="分析得到的匹配度, 用于低分简历的润色兜底"),
+) -> Response:
+    """Apply reviewed rewrites to the extracted resume and return a download."""
+    if output_format not in {"docx", "pdf"}:
+        raise HTTPException(status_code=400, detail={"type": "invalid_format", "message": "output_format 只能是 docx 或 pdf"})
+
+    try:
+        items = json.loads(rewrites_json)
+        if not isinstance(items, list):
+            raise ValueError("改写内容必须是数组")
+        rewrites = parse_rewrites(items)
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail={"type": "invalid_rewrites", "message": str(exc)}) from exc
+
+    filename = resume_file.filename or "resume.pdf"
+    if not filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail={"type": "invalid_file", "message": "resume_file 必须是 PDF"})
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    try:
+        tmp.write(await resume_file.read())
+        tmp.flush()
+        tmp.close()
+        try:
+            resume_text = extract_pdf_text(Path(tmp.name))
+            photo_bytes = extract_resume_photo(Path(tmp.name))
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail={"type": "pdf_parse_error", "message": str(exc)}) from exc
+        try:
+            content, media_type, download_name, application = render_resume_with_report(
+                resume_text, rewrites, output_format, match_score, photo_bytes
+            )
+        except (RuntimeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail={"type": "export_error", "message": str(exc)}) from exc
+    finally:
+        try:
+            tmp.close()
+        finally:
+            if os.path.exists(tmp.name):
+                os.unlink(tmp.name)
+
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{download_name}"',
+            "X-Resume-Rewrites-Applied": str(len(application.applied)),
+            "X-Resume-Rewrites-Pending": str(len(application.pending)),
+            "X-Resume-Photo": "preserved" if photo_bytes else "not-found",
+        },
+    )
 
 
 # ---------------- History ----------------

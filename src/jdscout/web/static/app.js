@@ -48,6 +48,9 @@ const APPLY = {
 const STATUS_ICON = { matched: "circleCheck", partial: "triangle", missing: "circleX" };
 
 let activeHistoryId = null;
+let currentResumeFile = null;
+let currentAdvice = null;
+let currentMatchScore = null;
 
 // ---------- 初始化 ----------
 els.file.addEventListener("change", () => {
@@ -55,6 +58,8 @@ els.file.addEventListener("change", () => {
   if (f) { els.fileName.textContent = f.name; els.fileDrop.classList.add("has-file"); }
 });
 els.btn.addEventListener("click", startAnalysis);
+$("#export-docx-btn").addEventListener("click", () => exportResume("docx"));
+$("#export-pdf-btn").addEventListener("click", () => exportResume("pdf"));
 els.newBtn.addEventListener("click", () => { showInputView(); closeSidebar(); });
 els.hamburger.addEventListener("click", toggleSidebar);
 els.scrim.addEventListener("click", closeSidebar);
@@ -79,6 +84,9 @@ function showInputView() {
   els.file.value = "";
   els.fileName.textContent = "点击选择 PDF 简历";
   els.fileDrop.classList.remove("has-file");
+  currentResumeFile = null;
+  currentAdvice = null;
+  currentMatchScore = null;
   resetSteps();
   setActiveHistory(null);
 }
@@ -115,6 +123,7 @@ async function startAnalysis() {
   if (!jd) return showError("请粘贴 JD 原文或一个 URL。");
   if (!isUrl && jd.length < 200) return showError("JD 文本太短(至少 200 字),请粘贴完整 JD,或直接贴岗位 URL。");
   if (!file) return showError("请上传简历 PDF。");
+  currentResumeFile = file;
 
   els.btn.disabled = true;
   els.btn.innerHTML = "分析中…";
@@ -183,12 +192,14 @@ function handleEvent(type, data) {
 // ---------- 渲染结果 ----------
 function renderResult(report) {
   els.resultPanel.hidden = false;
+  $("#export-status").hidden = true;
   if (report.errors && report.errors.length) {
     showError("部分步骤未完成:" + report.errors.join("; "));
   }
 
   const gap = report.gap;
   const advice = report.advice;
+  currentMatchScore = gap?.overall_match_score ?? null;
 
   if (gap) {
     $("#score-num").textContent = gap.overall_match_score;
@@ -202,6 +213,7 @@ function renderResult(report) {
   }
 
   if (advice) {
+    currentAdvice = advice;
     const badge = $("#apply-badge");
     const meta = APPLY[advice.should_apply] || { label: advice.should_apply, icon: "triangle" };
     badge.innerHTML = svg(meta.icon, 16) + `<span>${meta.label}</span>`;
@@ -210,12 +222,13 @@ function renderResult(report) {
 
     const rw = $("#rewrites");
     rw.innerHTML = "";
-    (advice.bullet_rewrites || []).forEach((b) => {
+    (advice.bullet_rewrites || []).forEach((b, index) => {
       const div = document.createElement("div");
       div.className = "rewrite";
       div.innerHTML =
-        `<div class="orig">${escapeHtml(b.original)}</div>` +
-        `<div class="new">${marked.parseInline(b.rewritten || "")}</div>` +
+        `<label class="rewrite-select"><input type="checkbox" data-rewrite-index="${index}" checked /> 应用这条改写</label>` +
+        `<div class="orig"><strong>原文</strong> ${escapeHtml(b.original)}</div>` +
+        `<label class="rewrite-edit"><strong>改写后</strong><textarea data-rewrite-index="${index}">${escapeHtml(b.rewritten || "")}</textarea></label>` +
         `<div class="why">${escapeHtml(b.rationale)}</div>`;
       rw.appendChild(div);
     });
@@ -224,6 +237,7 @@ function renderResult(report) {
     $("#questions-block").hidden = qs.length === 0;
     fillList("#questions-list", qs);
   } else {
+    currentAdvice = null;
     $("#apply-badge").innerHTML = "无建议";
     $("#apply-badge").className = "badge";
     $("#apply-reason").textContent = "";
@@ -233,6 +247,81 @@ function renderResult(report) {
   }
 
   renderSimilar(report.similar_histories || []);
+  updateExportState();
+}
+
+function updateExportState() {
+  const available = Boolean(currentResumeFile);
+  $("#export-docx-btn").disabled = !available;
+  $("#export-pdf-btn").disabled = !available;
+  if (!currentResumeFile) {
+    $("#export-help").textContent = "历史记录只保存分析结果; 请重新上传原始 PDF 后生成文件。";
+  } else if (!currentAdvice) {
+    $("#export-help").textContent = "当前没有改写建议，将生成原文的新版模板文件。";
+  } else if (!currentAdvice.bullet_rewrites?.length) {
+    $("#export-help").textContent = "当前没有可自动套用的改写，将生成原文的新版模板文件。";
+  } else {
+    $("#export-help").textContent = "确认下方改写后，可以生成可编辑的 Word 或投递用 PDF；无法安全定位的建议会放入待确认区域。";
+  }
+}
+
+function selectedRewrites() {
+  if (!currentAdvice) return [];
+  return [...document.querySelectorAll("#rewrites input[data-rewrite-index]:checked")].map((input) => {
+    const index = Number(input.dataset.rewriteIndex);
+    const textarea = document.querySelector(`#rewrites textarea[data-rewrite-index="${index}"]`);
+    const item = currentAdvice.bullet_rewrites[index];
+    return { original: item.original, rewritten: textarea?.value.trim() || item.rewritten };
+  }).filter((item) => item.rewritten);
+}
+
+async function exportResume(format) {
+  $("#export-error").hidden = true;
+  $("#export-status").hidden = true;
+  if (!currentResumeFile) return showExportError("请保留当前分析中的原始 PDF, 或重新上传后再生成。");
+  const rewrites = selectedRewrites();
+
+  const buttons = [$("#export-docx-btn"), $("#export-pdf-btn")];
+  buttons.forEach((button) => { button.disabled = true; });
+  const form = new FormData();
+  form.append("resume_file", currentResumeFile);
+  form.append("rewrites_json", JSON.stringify(rewrites));
+  form.append("output_format", format);
+  if (currentMatchScore != null) form.append("match_score", String(currentMatchScore));
+  try {
+    const response = await fetch("/api/resume/export", { method: "POST", body: form });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload?.detail?.message || `生成失败 (${response.status})`);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = format === "docx" ? "tailored_resume.docx" : "tailored_resume.pdf";
+    link.click();
+    URL.revokeObjectURL(url);
+    const applied = Number(response.headers.get("X-Resume-Rewrites-Applied") || 0);
+    const pending = Number(response.headers.get("X-Resume-Rewrites-Pending") || 0);
+    const photo = response.headers.get("X-Resume-Photo");
+    const status = $("#export-status");
+    const rewriteStatus = pending
+      ? `${applied} 条已自动替换，${pending} 条已放入待确认区域。`
+      : `${applied} 条改写已自动替换。`;
+    const photoStatus = photo === "preserved" ? "原简历照片已保留。" : "未发现可提取的原简历照片。";
+    status.textContent = `文件已生成：${rewriteStatus}${photoStatus}`;
+    status.hidden = false;
+  } catch (err) {
+    showExportError(err.message || "生成失败,请重试。");
+  } finally {
+    updateExportState();
+  }
+}
+
+function showExportError(message) {
+  const error = $("#export-error");
+  error.textContent = message;
+  error.hidden = false;
 }
 
 // 相似投递参考卡片

@@ -223,6 +223,15 @@ textarea#jd-text:focus { outline: none; border-color: var(--accent); }
 .primary-btn:active { transform: translateY(1px); }
 .primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.secondary-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 14px; background: var(--bg-primary); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: var(--radius-btn);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.secondary-btn:hover { border-color: var(--accent); color: var(--accent); }
+.secondary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .input-error { color: var(--error); font-size: 13px; margin: 16px 0 0; }
 
 /* ===== 结果区 ===== */
@@ -254,6 +263,10 @@ textarea#jd-text:focus { outline: none; border-color: var(--accent); }
 
 .result-block { margin-top: 32px; }
 
+.export-help { margin: -6px 0 14px; color: var(--text-secondary); font-size: 13px; }
+.export-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.export-status { margin: 12px 0 0; color: var(--success); font-size: 13px; }
+
 /* 技能匹配:三色分组 */
 .skill-group { margin-bottom: 8px; }
 .group-header {
@@ -283,8 +296,16 @@ textarea#jd-text:focus { outline: none; border-color: var(--accent); }
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: var(--radius-btn); padding: 16px; margin-bottom: 8px;
 }
-.rewrite .orig { color: var(--text-secondary); font-size: 13px; text-decoration: line-through; }
-.rewrite .new { color: var(--text-primary); font-size: 14px; margin: 8px 0; }
+.rewrite-select { display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px; margin-bottom: 10px; }
+.rewrite .orig { color: var(--text-secondary); font-size: 13px; }
+.rewrite-edit { display: block; color: var(--text-primary); font-size: 13px; margin: 8px 0; }
+.rewrite-edit textarea {
+  display: block; width: 100%; min-height: 72px; margin-top: 6px;
+  resize: vertical; background: var(--bg-primary); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: var(--radius-btn);
+  padding: 10px; font: inherit; line-height: 1.5;
+}
+.rewrite-edit textarea:focus { outline: none; border-color: var(--accent); }
 .rewrite .why { color: var(--accent); font-size: 12px; }
 
 .plain-list { margin: 0; padding-left: 20px; }

@@ -1,7 +1,7 @@
 [project]
 name = "jdscout"
 version = "0.1.0"
-description = "AI-powered JD analysis agent for job seekers"
+description = "AI-powered job matching and user-reviewed resume tailoring"
 requires-python = ">=3.11"
 dependencies = [
     "langgraph>=0.2.0",
@@ -10,6 +10,9 @@ dependencies = [
     "pydantic>=2.0",
     "python-dotenv>=1.0",
     "pdfplumber>=0.11",
+    "Pillow>=10.0",
+    "python-docx>=1.1",
+    "reportlab>=4.0",
     "httpx>=0.27",
     "beautifulsoup4>=4.12",
     "lxml>=5.0",
